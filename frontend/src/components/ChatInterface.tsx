@@ -56,7 +56,6 @@ export default function ChatInterface() {
         onAddSession={addSession}
         onSelectSession={selectSession}
         onRemoveSession={removeSession}
-        onUploaded={() => undefined}
       />
 
       <main className="flex flex-1 flex-col">
@@ -87,7 +86,7 @@ export default function ChatInterface() {
                 ? "Ask about an ingested drug label"
                 : "Create a session to start chatting"
             }
-            emptyBody="Ask about any drug by name - the system fetches its official FDA label and answers with page citations. Upload a PDF in the sidebar to add extra labels."
+            emptyBody="Drug label PDFs are automatically loaded on startup. Ask any question about a loaded drug and get answers with page-level citations."
           />
         </div>
 

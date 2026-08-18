@@ -1,5 +1,6 @@
 import type {
   CreateSessionResponse,
+  ListDocumentsResponse,
   QueryResponse,
   SessionHistoryResponse,
   UploadDocumentResponse,
@@ -63,4 +64,8 @@ export async function uploadDocument(
     throw new Error(detail);
   }
   return (await response.json()) as UploadDocumentResponse;
+}
+
+export function listDocuments(): Promise<ListDocumentsResponse> {
+  return request<ListDocumentsResponse>("/listDocuments");
 }

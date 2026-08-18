@@ -35,3 +35,7 @@ export interface SessionHistoryResponse {
   sessionId: string;
   turns: ChatTurn[];
 }
+
+export interface ListDocumentsResponse {
+  documents: string[];
+}

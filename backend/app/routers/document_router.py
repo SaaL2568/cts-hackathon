@@ -7,9 +7,16 @@ from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from ..config import settings
 from ..dependencies import documentIngestionService
 from ..errors import IngestionError
-from ..models.schemas import UploadDocumentResponse
+from ..models.schemas import ListDocumentsResponse, UploadDocumentResponse
+from ..services.vector_store_client import listDocNames
 
 router = APIRouter(tags=["documents"])
+
+
+@router.get("/listDocuments", response_model=ListDocumentsResponse)
+def listDocuments() -> ListDocumentsResponse:
+    names = listDocNames()
+    return ListDocumentsResponse(documents=names)
 
 
 @router.post("/uploadDocument", response_model=UploadDocumentResponse)

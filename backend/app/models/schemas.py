@@ -34,6 +34,10 @@ class UploadDocumentResponse(BaseModel):
     pagesProcessed: int
 
 
+class ListDocumentsResponse(BaseModel):
+    documents: list[str]
+
+
 class LookupResult(BaseModel):
     docName: str
     chunksIndexed: int

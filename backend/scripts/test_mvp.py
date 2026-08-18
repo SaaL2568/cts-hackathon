@@ -69,11 +69,13 @@ def main() -> None:
             continue
         result = response.json()
         print(f"Q: {question}")
-        print(f"A: {result['answer']}")
+        ans = result['answer'].encode('ascii', errors='replace').decode('ascii')
+        print(f"A: {ans}")
         print(f"Confidence: {result['confidence']:.3f} | Refused: {result['refused']}")
         print(f"Citations: {len(result['citations'])}")
         for citation in result["citations"]:
-            print(f"  - [{citation['docName']}, page {citation['pageNum']}]")
+            doc = citation['docName'].encode('ascii', errors='replace').decode('ascii')
+            print(f"  - [{doc}, page {citation['pageNum']}]")
         if result["refused"]:
             refusalCount += 1
         else:

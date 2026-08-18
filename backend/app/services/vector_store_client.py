@@ -29,3 +29,17 @@ def docExists(docName: str) -> bool:
         return False
     result = collection.get(where={"docName": docName}, limit=1)
     return len(result.get("ids") or []) > 0
+
+
+def listDocNames() -> list[str]:
+    """Return a sorted list of unique docName values in the vector store."""
+    collection = getCollection()
+    if collection.count() == 0:
+        return []
+    result = collection.get(include=["metadatas"])
+    metadatas = result.get("metadatas") or []
+    names: set[str] = set()
+    for meta in metadatas:
+        if meta and "docName" in meta:
+            names.add(str(meta["docName"]))
+    return sorted(names)

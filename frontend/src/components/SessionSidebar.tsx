@@ -1,7 +1,9 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
+
+import { listDocuments } from "@/lib/api";
 import type { SessionMeta } from "@/hooks/useSessions";
-import DocumentUpload from "./DocumentUpload";
 
 interface SessionSidebarProps {
   sessions: SessionMeta[];
@@ -10,7 +12,6 @@ interface SessionSidebarProps {
   onAddSession: () => Promise<string>;
   onSelectSession: (sessionId: string) => void;
   onRemoveSession: (sessionId: string) => void;
-  onUploaded: (docName: string) => void;
 }
 
 export default function SessionSidebar({
@@ -20,8 +21,26 @@ export default function SessionSidebar({
   onAddSession,
   onSelectSession,
   onRemoveSession,
-  onUploaded,
 }: SessionSidebarProps) {
+  const [documents, setDocuments] = useState<string[]>([]);
+  const [loadingDocs, setLoadingDocs] = useState(true);
+
+  const fetchDocuments = useCallback(async () => {
+    try {
+      setLoadingDocs(true);
+      const response = await listDocuments();
+      setDocuments(response.documents);
+    } catch {
+      // Silently handle — backend may not be ready yet
+    } finally {
+      setLoadingDocs(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void fetchDocuments();
+  }, [fetchDocuments]);
+
   return (
     <aside className="flex h-full w-72 flex-col border-r border-slate-200 bg-white">
       <div className="flex items-center justify-between px-4 py-4">
@@ -36,14 +55,46 @@ export default function SessionSidebar({
         </button>
       </div>
 
+      {/* Ingested Documents List */}
       <div className="px-4 pb-3">
-        <DocumentUpload onUploaded={onUploaded} />
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
+              Ingested Documents
+            </h3>
+            <button
+              type="button"
+              onClick={() => void fetchDocuments()}
+              className="text-[10px] text-slate-400 hover:text-brand transition-colors"
+              title="Refresh list"
+            >
+              ↻
+            </button>
+          </div>
+          {loadingDocs ? (
+            <p className="text-[11px] text-slate-400">Loading...</p>
+          ) : documents.length === 0 ? (
+            <p className="text-[11px] text-slate-400">No documents ingested yet.</p>
+          ) : (
+            <div className="flex flex-wrap gap-1.5">
+              {documents.map((name) => (
+                <span
+                  key={name}
+                  className="inline-block rounded-md bg-blue-100 px-2 py-0.5 text-[11px] font-medium text-blue-700"
+                  title={name}
+                >
+                  {name}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="chat-scroll flex-1 space-y-1 overflow-y-auto px-2">
         {sessions.length === 0 && (
           <p className="px-2 py-4 text-center text-xs text-slate-400">
-            No sessions yet. Start a new chat or upload a document.
+            No sessions yet. Start a new chat.
           </p>
         )}
         {sessions.map((session) => {
@@ -78,8 +129,8 @@ export default function SessionSidebar({
       </div>
 
       <div className="border-t border-slate-200 px-4 py-3 text-[10px] leading-relaxed text-slate-400">
-        Answers are grounded in uploaded FDA prescribing information and include
-        page citations.
+        Answers are grounded in FDA prescribing information PDFs loaded on
+        startup and include page citations.
       </div>
     </aside>
   );
@@ -95,3 +146,4 @@ function formatSessionLabel(createdAt: string, sessionId: string): string {
     minute: "2-digit",
   });
 }
+

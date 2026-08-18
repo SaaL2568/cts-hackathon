@@ -39,13 +39,10 @@ class DocumentIngestionService:
             with open_pdf(str(path)) as pdf:
                 for pageIndex, page in enumerate(pdf.pages, start=1):
                     rawText = page.extract_text()
-                    if not rawText:
-                        continue
-                    normalized = _WHITESPACE_PATTERN.sub(" ", rawText).strip()
-                    if not normalized:
+                    if not rawText or not rawText.strip():
                         continue
                     pageChunks = self._chunkPageText(
-                        normalized, docName=docName, pageNum=pageIndex
+                        rawText, docName=docName, pageNum=pageIndex
                     )
                     chunks.extend(pageChunks)
         except IngestionError:
@@ -64,10 +61,13 @@ class DocumentIngestionService:
         segments = self._segmentBySections(text)
         chunks: list[Chunk] = []
         for section, segmentText in segments:
+            normalizedSegment = _WHITESPACE_PATTERN.sub(" ", segmentText).strip()
+            if not normalizedSegment:
+                continue
             chunks.extend(
                 self._chunkSegment(
                     section=section,
-                    text=segmentText,
+                    text=normalizedSegment,
                     docName=docName,
                     pageNum=pageNum,
                 )
@@ -75,7 +75,7 @@ class DocumentIngestionService:
         return chunks
 
     def _segmentBySections(self, text: str) -> list[tuple[Optional[str], str]]:
-        lines = text.split(" ")
+        rawLines = text.split("\n")
         segments: list[tuple[Optional[str], list[str]]] = []
         currentSection: Optional[str] = None
         currentLines: list[str] = []
@@ -84,16 +84,19 @@ class DocumentIngestionService:
             if currentLines:
                 segments.append((currentSection, currentLines))
 
-        for line in lines:
-            if _isSectionHeader(line):
+        for line in rawLines:
+            trimmed = line.strip()
+            if not trimmed:
+                continue
+            if _isSectionHeader(trimmed):
                 flush()
-                currentSection = line
-                currentLines = []
+                currentSection = trimmed
+                currentLines = [trimmed]
             else:
-                currentLines.append(line)
+                currentLines.append(trimmed)
         flush()
 
-        return [(section, " ".join(lines)) for section, lines in segments]
+        return [(section, " ".join(words)) for section, words in segments]
 
     def _chunkSegment(
         self,
