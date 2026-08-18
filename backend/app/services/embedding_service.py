@@ -1,3 +1,4 @@
+import threading
 from typing import Optional
 
 from sentence_transformers import SentenceTransformer
@@ -9,10 +10,13 @@ class EmbeddingService:
     def __init__(self, modelName: str = settings.embeddingModelName):
         self.modelName = modelName
         self._model: Optional[SentenceTransformer] = None
+        self._loadLock = threading.Lock()
 
     def _loadModel(self) -> SentenceTransformer:
         if self._model is None:
-            self._model = SentenceTransformer(self.modelName)
+            with self._loadLock:
+                if self._model is None:
+                    self._model = SentenceTransformer(self.modelName)
         return self._model
 
     def embedTexts(self, texts: list[str]) -> list[list[float]]:

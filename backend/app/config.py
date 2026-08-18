@@ -13,6 +13,8 @@ TOP_K_RESULTS = 5
 CONFIDENCE_THRESHOLD = 0.7
 MAX_HISTORY_TURNS = 10
 QUERY_INSTRUCTION_PREFIX = "Represent this sentence for searching relevant passages: "
+OPENFDA_LABEL_URL = "https://api.fda.gov/drug/label.json"
+DAILYMED_PDF_URL = "https://dailymed.nlm.nih.gov/dailymed/getFile.cfm"
 
 
 class Settings(BaseSettings):
@@ -96,6 +98,25 @@ class Settings(BaseSettings):
     ollamaTimeoutSeconds: int = Field(
         default=120,
         validation_alias=AliasChoices("OLLAMA_TIMEOUT_SECONDS", "ollamaTimeoutSeconds"),
+    )
+
+    publicLookupEnabled: bool = Field(
+        default=True,
+        validation_alias=AliasChoices("PUBLIC_LOOKUP_ENABLED", "publicLookupEnabled"),
+    )
+    publicLookupTimeoutSeconds: int = Field(
+        default=180,
+        validation_alias=AliasChoices(
+            "PUBLIC_LOOKUP_TIMEOUT_SECONDS", "publicLookupTimeoutSeconds"
+        ),
+    )
+    openfdaLabelUrl: str = Field(
+        default=OPENFDA_LABEL_URL,
+        validation_alias=AliasChoices("OPENFDA_LABEL_URL", "openfdaLabelUrl"),
+    )
+    dailymedPdfUrl: str = Field(
+        default=DAILYMED_PDF_URL,
+        validation_alias=AliasChoices("DAILYMED_PDF_URL", "dailymedPdfUrl"),
     )
 
     @property

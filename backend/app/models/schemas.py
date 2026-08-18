@@ -34,6 +34,13 @@ class UploadDocumentResponse(BaseModel):
     pagesProcessed: int
 
 
+class LookupResult(BaseModel):
+    docName: str
+    chunksIndexed: int
+    pagesProcessed: int
+    alreadyIndexed: bool = False
+
+
 class QueryRequest(BaseModel):
     sessionId: str
     question: str

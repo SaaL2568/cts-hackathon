@@ -87,7 +87,7 @@ export default function ChatInterface() {
                 ? "Ask about an ingested drug label"
                 : "Create a session to start chatting"
             }
-            emptyBody="Upload an FDA prescribing information PDF in the sidebar, then ask dosage, warning, or side-effect questions."
+            emptyBody="Ask about any drug by name - the system fetches its official FDA label and answers with page citations. Upload a PDF in the sidebar to add extra labels."
           />
         </div>
 

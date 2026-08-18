@@ -1,11 +1,15 @@
 import asyncio
+import logging
+from typing import Optional
 
 from fastapi import APIRouter, HTTPException
 
+from ..config import settings
 from ..dependencies import (
     answerGenerator,
     chatSessionManager,
     guardrailService,
+    medicationLookupService,
     retrievalService,
 )
 from ..errors import AnswerGenerationError, RetrievalError
@@ -19,6 +23,7 @@ from ..models.schemas import (
 )
 
 router = APIRouter(tags=["chat"])
+logger = logging.getLogger(__name__)
 
 _SNIPPET_MAX_CHARS = 200
 
@@ -42,27 +47,48 @@ async def queryChat(request: QueryRequest) -> QueryResponse:
     if not question:
         raise HTTPException(status_code=400, detail="Question must not be empty.")
 
-    try:
-        retrievedChunks = await asyncio.get_running_loop().run_in_executor(
-            None, retrievalService.retrieveRelevantChunks, question
-        )
-    except RetrievalError as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
-
-    guardResult = guardrailService.checkConfidence(retrievedChunks)
     history = chatSessionManager.getSessionHistory(sessionId)
-
     userTurn = ChatTurn(role="user", content=question)
     chatSessionManager.appendTurn(sessionId, userTurn)
 
-    if not guardResult.allowed:
+    result = await _generateAnswer(question, history)
+    logger.info(
+        "Initial answer: allowed=%s refused=%s confidence=%.3f",
+        result["allowed"],
+        result["refused"],
+        result["guardResult"].maxScore,
+    )
+
+    needsPublicLookup = settings.publicLookupEnabled and (
+        not result["allowed"] or result["refused"]
+    )
+    if needsPublicLookup:
+        logger.info("Auto-lookup triggered for query: %r", question)
+        lookupResult = await asyncio.get_running_loop().run_in_executor(
+            None, medicationLookupService.findAndIngest, question
+        )
+        if lookupResult:
+            logger.info(
+                "Lookup succeeded: docName=%r chunks=%d alreadyIndexed=%s",
+                lookupResult.docName,
+                lookupResult.chunksIndexed,
+                lookupResult.alreadyIndexed,
+            )
+            result = await _generateAnswer(question, history)
+            logger.info(
+                "Post-lookup answer: allowed=%s refused=%s confidence=%.3f",
+                result["allowed"],
+                result["refused"],
+                result["guardResult"].maxScore,
+            )
+        else:
+            logger.info("Auto-lookup returned no result for query: %r", question)
+
+    if not result["allowed"]:
+        guardResult = result["guardResult"]
         refusalReason = guardResult.reason or "low_confidence"
         answer = _REFUSAL_MESSAGES.get(refusalReason, _REFUSAL_MESSAGES["low_confidence"])
-        assistantTurn = ChatTurn(
-            role="assistant",
-            content=answer,
-            refused=True,
-        )
+        assistantTurn = ChatTurn(role="assistant", content=answer, refused=True)
         chatSessionManager.appendTurn(sessionId, assistantTurn)
         return QueryResponse(
             sessionId=sessionId,
@@ -73,16 +99,26 @@ async def queryChat(request: QueryRequest) -> QueryResponse:
             refusalReason=refusalReason,
         )
 
-    try:
-        answer, refused, refusalReason = await asyncio.get_running_loop().run_in_executor(
-            None,
-            answerGenerator.generateAnswerWithCitations,
-            question,
-            retrievedChunks,
-            history,
+    retrievedChunks = result["retrievedChunks"]
+
+    # If the LLM itself refused, don't show citations from unrelated documents.
+    if result["refused"]:
+        refusalReason = result["refusalReason"] or "low_confidence"
+        assistantTurn = ChatTurn(
+            role="assistant",
+            content=result["answer"],
+            citations=[],
+            refused=True,
         )
-    except AnswerGenerationError as exc:
-        raise HTTPException(status_code=503, detail=str(exc)) from exc
+        chatSessionManager.appendTurn(sessionId, assistantTurn)
+        return QueryResponse(
+            sessionId=sessionId,
+            answer=result["answer"],
+            citations=[],
+            confidence=result["guardResult"].maxScore,
+            refused=True,
+            refusalReason=refusalReason,
+        )
 
     citations = [
         Citation(
@@ -95,19 +131,19 @@ async def queryChat(request: QueryRequest) -> QueryResponse:
 
     assistantTurn = ChatTurn(
         role="assistant",
-        content=answer,
+        content=result["answer"],
         citations=citations,
-        refused=refused,
+        refused=False,
     )
     chatSessionManager.appendTurn(sessionId, assistantTurn)
 
     return QueryResponse(
         sessionId=sessionId,
-        answer=answer,
+        answer=result["answer"],
         citations=citations,
-        confidence=guardResult.maxScore,
-        refused=refused,
-        refusalReason=refusalReason,
+        confidence=result["guardResult"].maxScore,
+        refused=False,
+        refusalReason=None,
     )
 
 
@@ -115,6 +151,48 @@ async def queryChat(request: QueryRequest) -> QueryResponse:
 def sessionHistory(sessionId: str) -> SessionHistoryResponse:
     turns = chatSessionManager.getSessionHistory(sessionId)
     return SessionHistoryResponse(sessionId=sessionId, turns=turns)
+
+
+async def _generateAnswer(question: str, history: list[ChatTurn]) -> dict:
+    loop = asyncio.get_running_loop()
+
+    try:
+        retrievedChunks = await loop.run_in_executor(
+            None, retrievalService.retrieveRelevantChunks, question
+        )
+    except RetrievalError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    guardResult = guardrailService.checkConfidence(retrievedChunks)
+    if not guardResult.allowed:
+        return {
+            "allowed": False,
+            "guardResult": guardResult,
+            "retrievedChunks": retrievedChunks,
+            "answer": None,
+            "refused": True,
+            "refusalReason": guardResult.reason,
+        }
+
+    try:
+        answer, refused, refusalReason = await loop.run_in_executor(
+            None,
+            answerGenerator.generateAnswerWithCitations,
+            question,
+            retrievedChunks,
+            history,
+        )
+    except AnswerGenerationError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+    return {
+        "allowed": True,
+        "guardResult": guardResult,
+        "retrievedChunks": retrievedChunks,
+        "answer": answer,
+        "refused": refused,
+        "refusalReason": refusalReason,
+    }
 
 
 def _trimSnippet(text: str) -> str:

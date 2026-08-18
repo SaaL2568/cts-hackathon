@@ -24,7 +24,16 @@ frontend/  Next.js (App Router) + React + Tailwind CSS + TypeScript
 1. User question (+ chat history)
 2. Retrieval -> dense cosine search against Chroma
 3. Guardrail -> confidence gate: below `CONFIDENCE_THRESHOLD` or out of scope -> refuse
-4. LLM answer -> grounded generation via local Ollama with strict system prompt
+4. Public lookup (auto) -> if the guardrail refuses, the drug name in the
+   question is searched on the openFDA API and the matching DailyMed label PDF
+   is downloaded into `backend/data/pdfs/`, ingested, and retrieval is retried
+5. LLM answer -> grounded generation via local Ollama with strict system prompt
+
+So you can ask about any marketed drug by name, even one that was never
+uploaded: the system recognizes the drug keyword, fetches its official label
+from the public FDA data, and answers from it. If no drug can be found (or the
+fetched label still does not support the question), it refuses rather than
+guessing.
 
 ## Prerequisites
 
