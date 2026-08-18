@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Env files
+.env
+.env.local
+.env*.local
+
+# Data artifacts
+backend/data/pdfs/*.pdf
+backend/data/vector_store/
+
+# Node
+node_modules/
+.next/
+out/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

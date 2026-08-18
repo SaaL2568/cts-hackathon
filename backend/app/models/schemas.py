@@ -1,0 +1,65 @@
+from datetime import datetime
+from typing import Literal, Optional
+
+from pydantic import BaseModel, Field
+
+
+class Chunk(BaseModel):
+    chunkId: str
+    docName: str
+    pageNum: int
+    section: Optional[str] = None
+    text: str
+    embedding: Optional[list[float]] = None
+
+
+class RetrievedChunk(BaseModel):
+    chunkId: str
+    docName: str
+    pageNum: int
+    section: Optional[str] = None
+    text: str
+    score: float
+
+
+class Citation(BaseModel):
+    docName: str
+    pageNum: int
+    snippet: str
+
+
+class UploadDocumentResponse(BaseModel):
+    docName: str
+    chunksIndexed: int
+    pagesProcessed: int
+
+
+class QueryRequest(BaseModel):
+    sessionId: str
+    question: str
+
+
+class QueryResponse(BaseModel):
+    sessionId: str
+    answer: str
+    citations: list[Citation]
+    confidence: float
+    refused: bool
+    refusalReason: Optional[str] = None
+
+
+class ChatTurn(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str
+    citations: list[Citation] = Field(default_factory=list)
+    refused: bool = False
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+
+class CreateSessionResponse(BaseModel):
+    sessionId: str
+
+
+class SessionHistoryResponse(BaseModel):
+    sessionId: str
+    turns: list[ChatTurn]
