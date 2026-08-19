@@ -77,6 +77,10 @@ class Settings(BaseSettings):
         default=BASE_DIR / "data" / "vector_store",
         validation_alias=AliasChoices("CHROMA_PERSIST_DIR", "chromaPersistDir"),
     )
+    sessionPersistDir: Path = Field(
+        default=BASE_DIR / "data" / "sessions",
+        validation_alias=AliasChoices("SESSION_PERSIST_DIR", "sessionPersistDir"),
+    )
     chromaCollectionName: str = Field(
         default="drug_label_chunks",
         validation_alias=AliasChoices("CHROMA_COLLECTION_NAME", "chromaCollectionName"),

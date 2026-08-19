@@ -1,6 +1,6 @@
 from ..config import settings
 from ..errors import RetrievalError
-from ..models.schemas import RetrievedChunk
+from ..models.schemas import ChatTurn, RetrievedChunk
 from .embedding_service import EmbeddingService
 from .vector_store_client import getCollection
 
@@ -9,15 +9,34 @@ class RetrievalService:
     def __init__(self, embeddingService: EmbeddingService):
         self.embeddingService = embeddingService
 
+    def _contextualizeQuery(
+        self, query: str, history: list[ChatTurn] | None = None
+    ) -> str:
+        if not history:
+            return query
+        userTurns = [
+            turn.content.strip()
+            for turn in history
+            if turn.role == "user" and turn.content.strip()
+        ]
+        if not userTurns:
+            return query
+        previousUserContext = " ".join(userTurns[-2:])
+        return f"{previousUserContext} {query}"
+
     def retrieveRelevantChunks(
-        self, query: str, topK: int = settings.topKResults
+        self,
+        query: str,
+        history: list[ChatTurn] | None = None,
+        topK: int = settings.topKResults,
     ) -> list[RetrievedChunk]:
         try:
             collection = getCollection()
             if collection.count() == 0:
                 return []
 
-            prefixedQuery = f"{settings.queryInstructionPrefix}{query}"
+            contextualized = self._contextualizeQuery(query, history)
+            prefixedQuery = f"{settings.queryInstructionPrefix}{contextualized}"
             queryEmbedding = self.embeddingService.embedText(prefixedQuery)
             nResults = min(max(1, topK), collection.count())
             result = collection.query(

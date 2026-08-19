@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-import { queryChat } from "@/lib/api";
+import { getSessionHistory, queryChat } from "@/lib/api";
 import type { ChatTurn } from "@/lib/types";
 
 const STORAGE_PREFIX = "cts-chat-messages-";
@@ -23,8 +23,32 @@ export function useChat(sessionId: string | null) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setMessages(sessionId ? readMessages(sessionId) : []);
+    if (!sessionId) {
+      setMessages([]);
+      setError(null);
+      return;
+    }
+    const localMsgs = readMessages(sessionId);
+    if (localMsgs.length > 0) {
+      setMessages(localMsgs);
+    }
     setError(null);
+
+    getSessionHistory(sessionId)
+      .then((res) => {
+        if (res.turns && res.turns.length > 0) {
+          setMessages(res.turns);
+          if (typeof window !== "undefined") {
+            window.localStorage.setItem(
+              `${STORAGE_PREFIX}${sessionId}`,
+              JSON.stringify(res.turns)
+            );
+          }
+        }
+      })
+      .catch(() => {
+        // preserve local cache if backend fetch fails
+      });
   }, [sessionId]);
 
   const persist = useCallback(

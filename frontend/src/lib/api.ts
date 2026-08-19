@@ -1,6 +1,7 @@
 import type {
   CreateSessionResponse,
   ListDocumentsResponse,
+  ListSessionsResponse,
   QueryResponse,
   SessionHistoryResponse,
   UploadDocumentResponse,
@@ -68,4 +69,8 @@ export async function uploadDocument(
 
 export function listDocuments(): Promise<ListDocumentsResponse> {
   return request<ListDocumentsResponse>("/listDocuments");
+}
+
+export function listSessions(): Promise<ListSessionsResponse> {
+  return request<ListSessionsResponse>("/listSessions");
 }

@@ -19,6 +19,7 @@ from ..models.schemas import (
     ChatTurn,
     Citation,
     CreateSessionResponse,
+    ListSessionsResponse,
     QueryRequest,
     QueryResponse,
     SessionHistoryResponse,
@@ -185,12 +186,18 @@ def sessionHistory(sessionId: str) -> SessionHistoryResponse:
     return SessionHistoryResponse(sessionId=sessionId, turns=turns)
 
 
+@router.get("/listSessions", response_model=ListSessionsResponse)
+def listSessions() -> ListSessionsResponse:
+    sessionIds = chatSessionManager.listSessionIds()
+    return ListSessionsResponse(sessionIds=sessionIds)
+
+
 async def _generateAnswer(question: str, history: list[ChatTurn]) -> dict:
     loop = asyncio.get_running_loop()
 
     try:
         retrievedChunks = await loop.run_in_executor(
-            None, retrievalService.retrieveRelevantChunks, question
+            None, retrievalService.retrieveRelevantChunks, question, history
         )
     except RetrievalError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc

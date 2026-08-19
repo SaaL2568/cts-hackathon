@@ -86,3 +86,7 @@ class CreateSessionResponse(BaseModel):
 class SessionHistoryResponse(BaseModel):
     sessionId: str
     turns: list[ChatTurn]
+
+
+class ListSessionsResponse(BaseModel):
+    sessionIds: list[str]

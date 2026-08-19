@@ -39,3 +39,7 @@ export interface SessionHistoryResponse {
 export interface ListDocumentsResponse {
   documents: string[];
 }
+
+export interface ListSessionsResponse {
+  sessionIds: string[];
+}

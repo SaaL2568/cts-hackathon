@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     settings.pdfUploadDir.mkdir(parents=True, exist_ok=True)
     settings.chromaPersistDir.mkdir(parents=True, exist_ok=True)
+    settings.sessionPersistDir.mkdir(parents=True, exist_ok=True)
 
     # Auto-ingest all PDFs found in the data/pdfs directory
     pdfDir = settings.pdfUploadDir

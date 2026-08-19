@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-import { createSession } from "@/lib/api";
+import { createSession, listSessions } from "@/lib/api";
 
 const STORAGE_KEY = "cts-chat-sessions";
 
@@ -28,10 +28,35 @@ export function useSessions() {
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
-    const stored = readSessions();
-    setSessions(stored);
-    setCurrentSessionId(stored[0]?.id ?? null);
-    setReady(true);
+    async function loadSessions() {
+      const stored = readSessions();
+      const storedMap = new Map(stored.map((s) => [s.id, s]));
+
+      try {
+        const { sessionIds } = await listSessions();
+        const merged: SessionMeta[] = sessionIds.map((id) => {
+          return storedMap.get(id) ?? { id, createdAt: new Date().toISOString() };
+        });
+        for (const s of stored) {
+          if (!sessionIds.includes(s.id)) {
+            merged.push(s);
+          }
+        }
+        setSessions(merged);
+        if (merged.length > 0) {
+          setCurrentSessionId((prev) => prev ?? merged[0].id);
+        }
+      } catch {
+        setSessions(stored);
+        if (stored.length > 0) {
+          setCurrentSessionId((prev) => prev ?? stored[0].id);
+        }
+      } finally {
+        setReady(true);
+      }
+    }
+
+    void loadSessions();
   }, []);
 
   const persist = useCallback((next: SessionMeta[]) => {
