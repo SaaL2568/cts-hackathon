@@ -4,6 +4,18 @@ from typing import Literal, Optional
 from pydantic import BaseModel, Field
 
 
+class IntentResult(BaseModel):
+    intent: Literal["chitchat", "domain_query"]
+    reason: Optional[str] = None
+
+
+class SanitizationResult(BaseModel):
+    cleaned: str
+    flagged: bool
+    flaggedPatterns: list[str] = Field(default_factory=list)
+
+
+
 class Chunk(BaseModel):
     chunkId: str
     docName: str

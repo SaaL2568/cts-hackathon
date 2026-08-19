@@ -5,6 +5,7 @@ import httpx
 from ..config import settings
 from ..errors import AnswerGenerationError
 from ..models.schemas import ChatTurn, RetrievedChunk
+from .prompt_sanitizer_service import PromptSanitizerService
 
 SYSTEM_PROMPT = (
     "You are a medical information assistant that answers questions about drug "
@@ -22,8 +23,16 @@ SYSTEM_PROMPT = (
     "Context blocks:\n{context}"
 )
 
+CHITCHAT_SYSTEM_PROMPT = (
+    "You are a friendly assistant for a drug-information chatbot. Reply briefly "
+    "and naturally. Mention you can also answer questions about drug labels."
+)
+
 
 class AnswerGenerator:
+    def __init__(self, promptSanitizerService: Optional[PromptSanitizerService] = None):
+        self.promptSanitizerService = promptSanitizerService or PromptSanitizerService()
+
     def generateAnswerWithCitations(
         self,
         query: str,
@@ -48,14 +57,33 @@ class AnswerGenerator:
             answer = f"I cannot answer this from the available information.{(' ' + refusalReason) if refusalReason else ''}"
         return answer, refused, refusalReason
 
+    def generateChitchatAnswer(
+        self,
+        query: str,
+        history: list[ChatTurn],
+    ) -> str:
+        messages: list[dict] = []
+        for turn in history[-settings.maxHistoryTurns :]:
+            messages.append({"role": turn.role, "content": turn.content})
+        messages.append({"role": "user", "content": query})
+
+        try:
+            return self._callOllama(CHITCHAT_SYSTEM_PROMPT, messages)
+        except Exception:
+            return (
+                "Hello! I am a friendly assistant for the drug-information chatbot. "
+                "I can answer questions based on official drug prescribing labels."
+            )
+
     def _buildContext(self, retrievedChunks: list[RetrievedChunk]) -> str:
         if not retrievedChunks:
             return "(no context available)"
         blocks = []
         for index, chunk in enumerate(retrievedChunks, start=1):
+            sanitizedText = self.promptSanitizerService.sanitize(chunk.text).cleaned
             citation = f"[{chunk.docName}, page {chunk.pageNum}]"
             sectionLabel = f" (section: {chunk.section})" if chunk.section else ""
-            blocks.append(f"Context {index} {citation}{sectionLabel}:\n{chunk.text}")
+            blocks.append(f"Context {index} {citation}{sectionLabel}:\n{sanitizedText}")
         return "\n\n".join(blocks)
 
     def _callOllama(self, systemPrompt: str, messages: list[dict]) -> str:
