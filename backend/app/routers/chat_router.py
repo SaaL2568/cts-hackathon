@@ -2,8 +2,9 @@ import asyncio
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
+from ..auth import requireAuth
 from ..config import settings
 from ..dependencies import (
     answerGenerator,
@@ -38,13 +39,15 @@ _REFUSAL_MESSAGES = {
 
 
 @router.post("/createSession", response_model=CreateSessionResponse)
-def createSession() -> CreateSessionResponse:
-    sessionId = chatSessionManager.createSession()
+def createSession(userId: str = Depends(requireAuth)) -> CreateSessionResponse:
+    sessionId = chatSessionManager.createSession(userId=userId)
     return CreateSessionResponse(sessionId=sessionId)
 
 
 @router.post("/queryChat", response_model=QueryResponse)
-async def queryChat(request: QueryRequest) -> QueryResponse:
+async def queryChat(
+    request: QueryRequest, userId: str = Depends(requireAuth)
+) -> QueryResponse:
     sessionId = request.sessionId.strip()
     question = request.question.strip()
     if not question:
@@ -181,14 +184,16 @@ async def queryChat(request: QueryRequest) -> QueryResponse:
 
 
 @router.get("/sessionHistory/{sessionId}", response_model=SessionHistoryResponse)
-def sessionHistory(sessionId: str) -> SessionHistoryResponse:
+def sessionHistory(
+    sessionId: str, userId: str = Depends(requireAuth)
+) -> SessionHistoryResponse:
     turns = chatSessionManager.getSessionHistory(sessionId)
     return SessionHistoryResponse(sessionId=sessionId, turns=turns)
 
 
 @router.get("/listSessions", response_model=ListSessionsResponse)
-def listSessions() -> ListSessionsResponse:
-    sessionIds = chatSessionManager.listSessionIds()
+def listSessions(userId: str = Depends(requireAuth)) -> ListSessionsResponse:
+    sessionIds = chatSessionManager.listSessionIds(userId=userId)
     return ListSessionsResponse(sessionIds=sessionIds)
 
 

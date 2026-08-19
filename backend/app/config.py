@@ -15,6 +15,8 @@ MAX_HISTORY_TURNS = 10
 QUERY_INSTRUCTION_PREFIX = "Represent this sentence for searching relevant passages: "
 OPENFDA_LABEL_URL = "https://api.fda.gov/drug/label.json"
 DAILYMED_PDF_URL = "https://dailymed.nlm.nih.gov/dailymed/getFile.cfm"
+AUTH_ENABLED = True
+API_AUTH_SECRET = ""
 
 
 class Settings(BaseSettings):
@@ -40,6 +42,14 @@ class Settings(BaseSettings):
     corsOriginsRaw: str = Field(
         default="http://localhost:3000",
         validation_alias=AliasChoices("CORS_ORIGINS", "corsOrigins"),
+    )
+    authEnabled: bool = Field(
+        default=AUTH_ENABLED,
+        validation_alias=AliasChoices("AUTH_ENABLED", "authEnabled"),
+    )
+    apiAuthSecret: str = Field(
+        default=API_AUTH_SECRET,
+        validation_alias=AliasChoices("API_AUTH_SECRET", "apiAuthSecret"),
     )
 
     maxChunkTokens: int = Field(

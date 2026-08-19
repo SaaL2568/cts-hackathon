@@ -8,11 +8,39 @@ import type {
 } from "./types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+export const TOKEN_STORAGE_KEY = "cts_api_auth_token";
+
+export function getAuthToken(): string {
+  if (typeof window !== "undefined") {
+    const stored = localStorage.getItem(TOKEN_STORAGE_KEY);
+    if (stored) return stored;
+  }
+  return "dev-secret-key-change-me";
+}
+
+export function setAuthToken(token: string): void {
+  if (typeof window !== "undefined") {
+    localStorage.setItem(TOKEN_STORAGE_KEY, token);
+  }
+}
+
+function getAuthHeaders(extraHeaders: Record<string, string> = {}): Record<string, string> {
+  const token = getAuthToken();
+  const headers: Record<string, string> = { ...extraHeaders };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  return headers;
+}
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const customHeaders = (options?.headers as Record<string, string>) || {};
   const response = await fetch(`${API_BASE}${path}`, {
-    headers: { "Content-Type": "application/json" },
     ...options,
+    headers: getAuthHeaders({
+      "Content-Type": "application/json",
+      ...customHeaders,
+    }),
   });
   if (!response.ok) {
     let detail = `${response.status} ${response.statusText}`;
@@ -20,7 +48,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
       const body = await response.json();
       if (body?.detail) detail = String(body.detail);
     } catch {
-      // keep the generic detail
+      // keep generic detail
     }
     throw new Error(detail);
   }
@@ -52,6 +80,7 @@ export async function uploadDocument(
 
   const response = await fetch(`${API_BASE}/uploadDocument`, {
     method: "POST",
+    headers: getAuthHeaders(),
     body: formData,
   });
   if (!response.ok) {
@@ -60,7 +89,7 @@ export async function uploadDocument(
       const body = await response.json();
       if (body?.detail) detail = String(body.detail);
     } catch {
-      // keep the generic detail
+      // keep generic detail
     }
     throw new Error(detail);
   }

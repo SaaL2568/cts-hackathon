@@ -15,6 +15,12 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    if settings.authEnabled and not settings.apiAuthSecret.strip():
+        raise RuntimeError(
+            "AUTH_ENABLED is True but API_AUTH_SECRET is empty. "
+            "Set API_AUTH_SECRET in .env or disable AUTH_ENABLED."
+        )
+
     settings.pdfUploadDir.mkdir(parents=True, exist_ok=True)
     settings.chromaPersistDir.mkdir(parents=True, exist_ok=True)
     settings.sessionPersistDir.mkdir(parents=True, exist_ok=True)

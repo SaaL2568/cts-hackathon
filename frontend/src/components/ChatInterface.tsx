@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import { useChat } from "@/hooks/useChat";
 import { useSessions } from "@/hooks/useSessions";
+import AuthModal from "./AuthModal";
 import MessageList from "./MessageList";
 import SessionSidebar from "./SessionSidebar";
 
@@ -24,6 +25,7 @@ export default function ChatInterface() {
   );
 
   const [input, setInput] = useState("");
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -49,6 +51,8 @@ export default function ChatInterface() {
 
   return (
     <div className="flex h-screen">
+      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
+
       <SessionSidebar
         sessions={sessions}
         currentSessionId={currentSessionId}
@@ -66,15 +70,24 @@ export default function ChatInterface() {
               Every answer is grounded in the source document with page citations.
             </p>
           </div>
-          {messages.length > 0 && (
+          <div className="flex items-center gap-4">
             <button
               type="button"
-              onClick={clearMessages}
-              className="text-xs text-slate-400 hover:text-slate-600"
+              onClick={() => setIsAuthOpen(true)}
+              className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-100"
             >
-              Clear history
+              🔑 API Token
             </button>
-          )}
+            {messages.length > 0 && (
+              <button
+                type="button"
+                onClick={clearMessages}
+                className="text-xs text-slate-400 hover:text-slate-600"
+              >
+                Clear history
+              </button>
+            )}
+          </div>
         </header>
 
         <div ref={scrollRef} className="flex flex-1 overflow-hidden">
