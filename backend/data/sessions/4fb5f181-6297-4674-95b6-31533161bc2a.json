@@ -1,0 +1,82 @@
+[
+  {
+    "role": "user",
+    "content": "what is Lisinopril used for",
+    "citations": [],
+    "refused": false,
+    "timestamp": "2026-08-20T17:57:55.604511"
+  },
+  {
+    "role": "assistant",
+    "content": "Lisinopril is used in combination with hydrochlorothiazide to treat hypertension (high blood pressure), which helps lower blood pressure and reduce the risk of fatal and non-fatal cardiovascular events, such as strokes and myocardial infarctions [doc name, page 5]. This fixed-dose combination is not indicated for initial therapy [doc name, page 5].",
+    "citations": [
+      {
+        "docName": "Lisinopril and Hydrochlorothiazide (LISINOPRIL AND HYDROCHLOROTHIAZIDE TABLETS)",
+        "pageNum": 5,
+        "snippet": "Based on the text provided, here is a concise summary: Lisinopril and hydrochlorothiazide tablets are indicated for treating hypertension to lower blood pressure. This reduction lowers the risk of fat..."
+      },
+      {
+        "docName": "lisinopril-and-hydrochlorothiazide-lisinopril-and-hydrochlorothiazide-tablets",
+        "pageNum": 13,
+        "snippet": "The VA NEPHRON trial enrolled 1448 patients with type 2 diabetes, elevated urinary- albumin-to-creatinine ratio, and decreased estimated glomerular filtration rate (GFR 30 to 89.9 ml/min), randomized..."
+      },
+      {
+        "docName": "Lisinopril and Hydrochlorothiazide (LISINOPRIL AND HYDROCHLOROTHIAZIDE TABLETS)",
+        "pageNum": 13,
+        "snippet": "The VA NEPHRON trial enrolled 1448 patients with type 2 diabetes, elevated urinary- albumin-to-creatinine ratio, and decreased estimated glomerular filtration rate (GFR 30 to 89.9 ml/min), randomized..."
+      },
+      {
+        "docName": "lisinopril-and-hydrochlorothiazide-lisinopril-and-hydrochlorothiazide-tablets",
+        "pageNum": 5,
+        "snippet": "INDICATIONS AND USAGE Lisinopril and hydrochlorothiazide tablets are indicated for the treatment of hypertension, to lower blood pressure. Lowering blood pressure lowers the risk of fatal and non-fata..."
+      },
+      {
+        "docName": "lisinopril-and-hydrochlorothiazide-lisinopril-and-hydrochlorothiazide-tablets",
+        "pageNum": 3,
+        "snippet": "AND ADMINISTRATION) Lisinopril can be removed by hemodialysis."
+      }
+    ],
+    "refused": false,
+    "timestamp": "2026-08-20T18:00:33.293946"
+  },
+  {
+    "role": "user",
+    "content": "waht si the dosage wehat happens if ai take 5 times the amount",
+    "citations": [],
+    "refused": false,
+    "timestamp": "2026-08-20T18:01:07.873682"
+  },
+  {
+    "role": "assistant",
+    "content": "Taking 5 times the prescribed dosage of lisinopril and hydrochlorothiazide could lead to severe hypotension (low blood pressure) and electrolyte imbalances (e.g., hypokalemia, hypochloremia, hyponatremia) due to excessive diuresis and drug toxicity [doc name, page 19]. Overdose management includes discontinuing the medication, inducing emesis/gastric lavage, correcting dehydration and electrolyte disturbances, and administering intravenous normal saline for hypotension [doc name, page 19]. Hemodialysis may be used to remove lisinopril but is not specifically mentioned for hydrochlorothiazide overdose. Immediate medical attention is critical.",
+    "citations": [
+      {
+        "docName": "lisinopril-and-hydrochlorothiazide-lisinopril-and-hydrochlorothiazide-tablets",
+        "pageNum": 20,
+        "snippet": "DOSAGE AND ADMINISTRATION Lisinopril monotherapy is an effective treatment of hypertension in once-daily doses of 10 mg to 80 mg, while hydrochlorothiazide monotherapy is effective in doses of 12.5 mg..."
+      },
+      {
+        "docName": "Lisinopril and Hydrochlorothiazide (LISINOPRIL AND HYDROCHLOROTHIAZIDE TABLETS)",
+        "pageNum": 20,
+        "snippet": "DOSAGE AND ADMINISTRATION Lisinopril monotherapy is an effective treatment of hypertension in once-daily doses of 10 mg to 80 mg, while hydrochlorothiazide monotherapy is effective in doses of 12.5 mg..."
+      },
+      {
+        "docName": "Lisinopril and Hydrochlorothiazide (LISINOPRIL AND HYDROCHLOROTHIAZIDE TABLETS)",
+        "pageNum": 3,
+        "snippet": "Based on the provided text, here is a concise summary of the \"General\" section, preserving all exact numeric dosages, warnings, and contraindications verbatim. ### **Summary of General Section** **Mec..."
+      },
+      {
+        "docName": "lisinopril-and-hydrochlorothiazide-lisinopril-and-hydrochlorothiazide-tablets",
+        "pageNum": 19,
+        "snippet": "OVERDOSAGE No specific information is available on the treatment of overdosage with lisinopril and hydrochlorothiazide tablets. Treatment is symptomatic and supportive. Therapy with lisinopril and hyd..."
+      },
+      {
+        "docName": "Lisinopril and Hydrochlorothiazide (LISINOPRIL AND HYDROCHLOROTHIAZIDE TABLETS)",
+        "pageNum": 19,
+        "snippet": "OVERDOSAGE No specific information is available on the treatment of overdosage with lisinopril and hydrochlorothiazide tablets. Treatment is symptomatic and supportive. Therapy with lisinopril and hyd..."
+      }
+    ],
+    "refused": false,
+    "timestamp": "2026-08-20T18:02:58.959557"
+  }
+]

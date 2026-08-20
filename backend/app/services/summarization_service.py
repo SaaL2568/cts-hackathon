@@ -1,6 +1,8 @@
 import base64
 import io
 import logging
+import random
+import time
 from pathlib import Path
 from typing import Optional
 
@@ -78,10 +80,18 @@ class SummarizationService:
                                         },
                                     },
                                 ]
+                                try:
+                                    summaryText = self._callOpenRouter(SYSTEM_PROMPT, userContent)
+                                except Exception as visionExc:
+                                    logger.warning(
+                                        "Vision summarization failed for %s p.%d section %r (%s). Falling back to text-only OpenRouter call.",
+                                        docName, pageIndex, section, visionExc
+                                    )
+                                    textOnlyContent = f"Section: {section or 'General'}\nText: {segmentText}"
+                                    summaryText = self._callOpenRouter(SYSTEM_PROMPT, textOnlyContent)
                             else:
                                 userContent = f"Section: {section or 'General'}\nText: {segmentText}"
-
-                            summaryText = self._callOpenRouter(SYSTEM_PROMPT, userContent)
+                                summaryText = self._callOpenRouter(SYSTEM_PROMPT, userContent)
                             summaryLen = len(summaryText)
                             reduction = (1.0 - (summaryLen / max(1, sourceLen))) * 100.0
                             logger.info(
@@ -165,13 +175,50 @@ class SummarizationService:
             ],
             "temperature": 0.1,
         }
-        response = httpx.post(
-            url,
-            json=payload,
-            headers=headers,
-            timeout=settings.publicLookupTimeoutSeconds,
-        )
-        response.raise_for_status()
+
+        max_retries = 3
+        base_delay = 2.0  # seconds
+
+        for attempt in range(max_retries + 1):
+            try:
+                response = httpx.post(
+                    url,
+                    json=payload,
+                    headers=headers,
+                    timeout=settings.publicLookupTimeoutSeconds,
+                )
+                response.raise_for_status()
+                break
+            except httpx.HTTPStatusError as exc:
+                status = exc.response.status_code
+                if status in (429, 500, 502, 503, 504) and attempt < max_retries:
+                    delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
+                    retry_after = exc.response.headers.get("Retry-After")
+                    if retry_after:
+                        try:
+                            delay = max(delay, float(retry_after))
+                        except ValueError:
+                            pass
+                    logger.warning(
+                        "OpenRouter call failed with status %d (attempt %d/%d). Retrying in %.2f seconds...",
+                        status, attempt + 1, max_retries + 1, delay
+                    )
+                    time.sleep(delay)
+                else:
+                    raise SummarizationError(
+                        f"Client/Server error '{exc.response.status_code} {exc.response.reason_phrase}' for url '{exc.request.url}'"
+                    ) from exc
+            except httpx.RequestError as exc:
+                if attempt < max_retries:
+                    delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
+                    logger.warning(
+                        "OpenRouter network request failed (attempt %d/%d). Retrying in %.2f seconds: %s",
+                        attempt + 1, max_retries + 1, delay, exc
+                    )
+                    time.sleep(delay)
+                else:
+                    raise SummarizationError(f"Network error contacting OpenRouter: {exc}") from exc
+
         data = response.json()
         choices = data.get("choices") or []
         if not choices:

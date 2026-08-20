@@ -1,0 +1,65 @@
+[
+  {
+    "role": "user",
+    "content": "hello",
+    "citations": [],
+    "refused": false,
+    "timestamp": "2026-08-19T12:32:59.678523"
+  },
+  {
+    "role": "assistant",
+    "content": "Hello! I am a friendly assistant for the drug-information chatbot. I can answer questions based on official drug prescribing labels.",
+    "citations": [],
+    "refused": false,
+    "timestamp": "2026-08-19T12:33:02.041461"
+  },
+  {
+    "role": "user",
+    "content": "tell me about aspirin",
+    "citations": [],
+    "refused": false,
+    "timestamp": "2026-08-19T12:34:07.775173"
+  },
+  {
+    "role": "user",
+    "content": "aspirin",
+    "citations": [],
+    "refused": false,
+    "timestamp": "2026-08-19T12:36:48.720811"
+  },
+  {
+    "role": "assistant",
+    "content": "Hello! I am a friendly assistant for the drug-information chatbot. I can answer questions based on official drug prescribing labels.",
+    "citations": [],
+    "refused": false,
+    "timestamp": "2026-08-19T12:36:50.981610"
+  },
+  {
+    "role": "user",
+    "content": "spirin",
+    "citations": [],
+    "refused": false,
+    "timestamp": "2026-08-19T12:37:53.823984"
+  },
+  {
+    "role": "assistant",
+    "content": "Hello! I am a friendly assistant for the drug-information chatbot. I can answer questions based on official drug prescribing labels.",
+    "citations": [],
+    "refused": false,
+    "timestamp": "2026-08-19T12:37:56.133962"
+  },
+  {
+    "role": "user",
+    "content": "waht is apririn used for",
+    "citations": [],
+    "refused": false,
+    "timestamp": "2026-08-19T12:38:52.455247"
+  },
+  {
+    "role": "user",
+    "content": "what is aspirin for",
+    "citations": [],
+    "refused": false,
+    "timestamp": "2026-08-19T12:39:22.089699"
+  }
+]

@@ -1,0 +1,23 @@
+[
+  {
+    "role": "user",
+    "content": "tell me about aspirin",
+    "citations": [],
+    "refused": false,
+    "timestamp": "2026-08-20T16:59:30.500782"
+  },
+  {
+    "role": "user",
+    "content": "aspirin",
+    "citations": [],
+    "refused": false,
+    "timestamp": "2026-08-20T17:02:16.981697"
+  },
+  {
+    "role": "assistant",
+    "content": "Aspirin is a common medication used for pain relief, reducing fever, and inflammation. It also acts as an antiplatelet drug, preventing blood clots (used for heart attack/stroke risk reduction). Available in regular, enteric-coated, and low-dose forms. Dosage varies by purpose (e.g., 81\u2013100 mg daily for heart protection vs. higher doses for pain). Side effects may include stomach irritation, ulcers, or bleeding risks. Always consult a healthcare provider for personalized advice. Need info on specific labels or dosages?",
+    "citations": [],
+    "refused": false,
+    "timestamp": "2026-08-20T17:03:36.081350"
+  }
+]

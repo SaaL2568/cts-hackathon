@@ -1,1 +1,37 @@
-[]
+[
+  {
+    "role": "user",
+    "content": "hello",
+    "citations": [],
+    "refused": false,
+    "timestamp": "2026-08-20T16:55:10.726611"
+  },
+  {
+    "role": "assistant",
+    "content": "Hello! I am a friendly assistant for the drug-information chatbot. I can answer questions based on official drug prescribing labels.",
+    "citations": [],
+    "refused": false,
+    "timestamp": "2026-08-20T16:55:13.439597"
+  },
+  {
+    "role": "user",
+    "content": "waht can you do",
+    "citations": [],
+    "refused": false,
+    "timestamp": "2026-08-20T16:55:25.214081"
+  },
+  {
+    "role": "assistant",
+    "content": "I could not answer this question confidently based on the available information.",
+    "citations": [],
+    "refused": true,
+    "timestamp": "2026-08-20T16:55:33.897943"
+  },
+  {
+    "role": "user",
+    "content": "tell me about aspirin",
+    "citations": [],
+    "refused": false,
+    "timestamp": "2026-08-20T16:55:44.726035"
+  }
+]
