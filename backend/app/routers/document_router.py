@@ -2,9 +2,8 @@ import asyncio
 from pathlib import Path
 from typing import Optional
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 
-from ..auth import requireAuth
 from ..config import settings
 from ..dependencies import documentIngestionService
 from ..errors import IngestionError
@@ -15,7 +14,7 @@ router = APIRouter(tags=["documents"])
 
 
 @router.get("/listDocuments", response_model=ListDocumentsResponse)
-def listDocuments(userId: str = Depends(requireAuth)) -> ListDocumentsResponse:
+def listDocuments() -> ListDocumentsResponse:
     names = listDocNames()
     return ListDocumentsResponse(documents=names)
 
@@ -24,7 +23,6 @@ def listDocuments(userId: str = Depends(requireAuth)) -> ListDocumentsResponse:
 async def uploadDocument(
     file: UploadFile = File(...),
     docName: Optional[str] = Form(default=None),
-    userId: str = Depends(requireAuth),
 ) -> UploadDocumentResponse:
     if not file.filename or not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are accepted.")

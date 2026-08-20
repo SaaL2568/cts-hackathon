@@ -6,6 +6,7 @@ from pathlib import Path
 from app.config import settings
 from app.models.schemas import ChatTurn, Citation
 from app.services.chat_session_manager import ChatSessionManager
+from app.services.retrieval_service import RetrievalService
 
 
 def testSessionPersistence():
@@ -34,10 +35,9 @@ def testSessionPersistence():
         # Verify disk file content
         with open(tempDir / f"{sId}.json", "r", encoding="utf-8") as f:
             diskData = json.load(f)
-        turnsOnDisk = diskData["turns"] if isinstance(diskData, dict) else diskData
-        assert len(turnsOnDisk) == 2, f"Expected 2 turns on disk, got {len(turnsOnDisk)}"
-        assert turnsOnDisk[0]["role"] == "user"
-        assert turnsOnDisk[1]["role"] == "assistant"
+        assert len(diskData) == 2, f"Expected 2 turns on disk, got {len(diskData)}"
+        assert diskData[0]["role"] == "user"
+        assert diskData[1]["role"] == "assistant"
 
         # Simulate process restart by initializing a fresh manager instance
         manager2 = ChatSessionManager()
@@ -60,21 +60,7 @@ def testContextualQuery():
         def embedText(self, text: str):
             return [0.0]
 
-    # Minimal inline RetrievalService simulation to avoid loading heavy ML packages during session tests
-    class DummyRetrievalService:
-        def __init__(self, embeddingService):
-            self.embeddingService = embeddingService
-
-        def _contextualizeQuery(self, question: str, history: list[ChatTurn] | None) -> str:
-            if not history:
-                return question
-            userTurns = [turn.content for turn in history if turn.role == "user"]
-            if not userTurns:
-                return question
-            lastUserTurn = userTurns[-1]
-            return f"Given previous question: '{lastUserTurn}', answer this: {question}"
-
-    service = DummyRetrievalService(embeddingService=DummyEmbeddingService())
+    service = RetrievalService(embeddingService=DummyEmbeddingService())
 
     # Case 1: No history
     q1 = "what is the dosage?"

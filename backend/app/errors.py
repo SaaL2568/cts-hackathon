@@ -8,8 +8,3 @@ class RetrievalError(Exception):
 
 class AnswerGenerationError(Exception):
     """Raised when the LLM cannot be reached or produced no answer."""
-
-
-class AuthenticationError(Exception):
-    """Raised when request authentication fails."""
-
