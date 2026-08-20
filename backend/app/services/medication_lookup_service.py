@@ -8,6 +8,7 @@ import httpx
 from ..config import settings
 from ..models.schemas import LookupResult
 from .document_ingestion_service import DocumentIngestionService
+from .summarization_service import SummarizationService
 from .vector_store_client import docExists
 
 _CAPITALIZED_RUN_PATTERN = re.compile(
@@ -43,8 +44,13 @@ logger = logging.getLogger(__name__)
 
 
 class MedicationLookupService:
-    def __init__(self, documentIngestionService: DocumentIngestionService):
+    def __init__(
+        self,
+        documentIngestionService: DocumentIngestionService,
+        summarizationService: Optional[SummarizationService] = None,
+    ):
         self.documentIngestionService = documentIngestionService
+        self.summarizationService = summarizationService
 
     def findAndIngest(self, query: str) -> Optional[LookupResult]:
         if not settings.publicLookupEnabled:
@@ -74,9 +80,30 @@ class MedicationLookupService:
                     alreadyIndexed=True,
                 )
             try:
-                chunkCount, pagesProcessed = self.documentIngestionService.ingestDocument(
-                    str(pdfPath), info["docName"]
-                )
+                if settings.summarizerProvider != "off" and self.summarizationService:
+                    try:
+                        summarizedSections = self.summarizationService.summarizeDocument(
+                            str(pdfPath), info["docName"]
+                        )
+                        chunkCount, pagesProcessed = (
+                            self.documentIngestionService.ingestSummarizedSections(
+                                summarizedSections, info["docName"]
+                            )
+                        )
+                    except Exception as sumExc:
+                        logger.warning(
+                            "Summarized ingestion failed for %r (%s), falling back to standard ingestion",
+                            info.get("docName"), sumExc
+                        )
+                        chunkCount, pagesProcessed = (
+                            self.documentIngestionService.ingestDocument(
+                                str(pdfPath), info["docName"]
+                            )
+                        )
+                else:
+                    chunkCount, pagesProcessed = self.documentIngestionService.ingestDocument(
+                        str(pdfPath), info["docName"]
+                    )
                 logger.info("Ingested %r: %d chunks, %d pages", info['docName'], chunkCount, pagesProcessed)
             except Exception as exc:
                 logger.error("Ingestion failed for %r: %s", info.get('docName'), exc)

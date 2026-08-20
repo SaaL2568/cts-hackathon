@@ -15,6 +15,9 @@ MAX_HISTORY_TURNS = 10
 QUERY_INSTRUCTION_PREFIX = "Represent this sentence for searching relevant passages: "
 OPENFDA_LABEL_URL = "https://api.fda.gov/drug/label.json"
 DAILYMED_PDF_URL = "https://dailymed.nlm.nih.gov/dailymed/getFile.cfm"
+OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+OPENROUTER_MODEL = "google/gemma-4-31b-it:free"
+SUMMARIZER_PROVIDER = "openrouter"
 
 
 class Settings(BaseSettings):
@@ -121,6 +124,22 @@ class Settings(BaseSettings):
     dailymedPdfUrl: str = Field(
         default=DAILYMED_PDF_URL,
         validation_alias=AliasChoices("DAILYMED_PDF_URL", "dailymedPdfUrl"),
+    )
+    openrouterBaseUrl: str = Field(
+        default=OPENROUTER_BASE_URL,
+        validation_alias=AliasChoices("OPENROUTER_BASE_URL", "openrouterBaseUrl"),
+    )
+    openrouterModel: str = Field(
+        default=OPENROUTER_MODEL,
+        validation_alias=AliasChoices("OPENROUTER_MODEL", "openrouterModel"),
+    )
+    openrouterApiKey: str = Field(
+        default="",
+        validation_alias=AliasChoices("OPENROUTER_API_KEY", "openrouterApiKey"),
+    )
+    summarizerProvider: str = Field(
+        default=SUMMARIZER_PROVIDER,
+        validation_alias=AliasChoices("SUMMARIZER_PROVIDER", "summarizerProvider"),
     )
 
     @property

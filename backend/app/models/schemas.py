@@ -90,3 +90,10 @@ class SessionHistoryResponse(BaseModel):
 
 class ListSessionsResponse(BaseModel):
     sessionIds: list[str]
+
+
+class SummarizedSection(BaseModel):
+    pageNum: int
+    section: Optional[str] = None
+    summaryText: str
+    sourceCharCount: int

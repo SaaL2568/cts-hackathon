@@ -7,13 +7,17 @@ from .services.intent_classifier_service import IntentClassifierService
 from .services.medication_lookup_service import MedicationLookupService
 from .services.prompt_sanitizer_service import PromptSanitizerService
 from .services.retrieval_service import RetrievalService
+from .services.summarization_service import SummarizationService
 
 embeddingService = EmbeddingService()
 documentIngestionService = DocumentIngestionService(embeddingService)
+summarizationService = SummarizationService()
 retrievalService = RetrievalService(embeddingService)
 guardrailService = GuardrailService()
 promptSanitizerService = PromptSanitizerService()
 intentClassifierService = IntentClassifierService()
 answerGenerator = AnswerGenerator(promptSanitizerService)
 chatSessionManager = ChatSessionManager()
-medicationLookupService = MedicationLookupService(documentIngestionService)
+medicationLookupService = MedicationLookupService(
+    documentIngestionService, summarizationService
+)

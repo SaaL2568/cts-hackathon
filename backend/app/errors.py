@@ -8,3 +8,7 @@ class RetrievalError(Exception):
 
 class AnswerGenerationError(Exception):
     """Raised when the LLM cannot be reached or produced no answer."""
+
+
+class SummarizationError(Exception):
+    """Raised when summarization fails or is misconfigured."""
