@@ -9,9 +9,17 @@ INJECTION_PATTERNS = [
     r"you\s+are\s+now\b",
     r"print\s+your\s+instructions",
     r"reveal\s+your\s+prompt",
+    r"reveal\s+your\s+hidden",
+    r"reveal\s+your\s+configuration",
+    r"tell\s+me\s+(everything\s+)?contained\s+in\s+your\s+system\s+prompt",
     r"system\s*:",
     r"override\s+(system\s+)?prompt",
+    r"system\s+message\s+override",
     r"forget\s+(all\s+)?prior\s+instructions",
+    r"cancel(led)?\s+instructions",
+    r"instructions\s+are\s+cancelled",
+    r"what\s+is\s+your\s+system\s+prompt",
+    r"show\s+me\s+your\s+system\s+prompt",
 ]
 
 INJECTION_REGEXES = [

@@ -79,8 +79,22 @@ async def queryChat(request: QueryRequest) -> QueryResponse:
         )
 
     sanitized = promptSanitizerService.sanitize(question)
-    queryText = sanitized.cleaned if sanitized.cleaned else question
+    if sanitized.flagged:
+        logger.warning("Prompt injection detected: %s", sanitized.flaggedPatterns)
+        refusalMsg = "I cannot process this request. Please ask a question related to drug prescribing information."
+        assistantTurn = ChatTurn(role="assistant", content=refusalMsg, refused=True)
+        chatSessionManager.appendTurn(sessionId, ChatTurn(role="user", content=question))
+        chatSessionManager.appendTurn(sessionId, assistantTurn)
+        return QueryResponse(
+            sessionId=sessionId,
+            answer=refusalMsg,
+            citations=[],
+            confidence=1.0,
+            refused=True,
+            refusalReason="prompt_injection"
+        )
 
+    queryText = sanitized.cleaned if sanitized.cleaned else question
     userTurn = ChatTurn(role="user", content=question)
     chatSessionManager.appendTurn(sessionId, userTurn)
 
@@ -108,6 +122,14 @@ async def queryChat(request: QueryRequest) -> QueryResponse:
                 lookupResult.alreadyIndexed,
             )
             result = await _generateAnswer(queryText, history)
+            
+            disclaimer = f"**DISCLAIMER:** I just pulled information for '{lookupResult.docName}' from the FDA library. This information may or may not be true. Please consult a doctor.\n\n"
+            if result.get("answer"):
+                if not result["answer"].startswith("**DISCLAIMER:**"):
+                    result["answer"] = disclaimer + result["answer"]
+            else:
+                result["answer"] = disclaimer
+
             logger.info(
                 "Post-lookup answer: allowed=%s refused=%s confidence=%.3f",
                 result["allowed"],

@@ -55,42 +55,6 @@ export default function SessionSidebar({
         </button>
       </div>
 
-      {/* Ingested Documents List */}
-      <div className="px-4 pb-3">
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
-              Ingested Documents
-            </h3>
-            <button
-              type="button"
-              onClick={() => void fetchDocuments()}
-              className="text-[10px] text-slate-400 hover:text-brand transition-colors"
-              title="Refresh list"
-            >
-              ↻
-            </button>
-          </div>
-          {loadingDocs ? (
-            <p className="text-[11px] text-slate-400">Loading...</p>
-          ) : documents.length === 0 ? (
-            <p className="text-[11px] text-slate-400">No documents ingested yet.</p>
-          ) : (
-            <div className="flex flex-wrap gap-1.5">
-              {documents.map((name) => (
-                <span
-                  key={name}
-                  className="inline-block rounded-md bg-blue-100 px-2 py-0.5 text-[11px] font-medium text-blue-700"
-                  title={name}
-                >
-                  {name}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
       <div className="chat-scroll flex-1 space-y-1 overflow-y-auto px-2">
         {sessions.length === 0 && (
           <p className="px-2 py-4 text-center text-xs text-slate-400">
@@ -126,6 +90,50 @@ export default function SessionSidebar({
             </div>
           );
         })}
+      </div>
+
+      {/* Ingested Documents List - Moved to bottom and made collapsible */}
+      <div className="mt-auto px-4 pb-3 border-t border-slate-200 pt-3">
+        <details className="rounded-xl border border-slate-200 bg-slate-50 group">
+          <summary className="flex cursor-pointer items-center justify-between p-3 outline-none select-none">
+            <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
+              Ingested Documents
+            </h3>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  void fetchDocuments();
+                }}
+                className="text-[10px] text-slate-400 hover:text-brand transition-colors"
+                title="Refresh list"
+              >
+                ↻
+              </button>
+              <span className="text-slate-400 transition-transform group-open:rotate-180">▼</span>
+            </div>
+          </summary>
+          <div className="p-3 pt-0">
+            {loadingDocs ? (
+              <p className="text-[11px] text-slate-400">Loading...</p>
+            ) : documents.length === 0 ? (
+              <p className="text-[11px] text-slate-400">No documents ingested yet.</p>
+            ) : (
+              <div className="flex max-h-40 flex-wrap gap-1.5 overflow-y-auto">
+                {documents.map((name) => (
+                  <span
+                    key={name}
+                    className="inline-block rounded-md bg-blue-100 px-2 py-0.5 text-[11px] font-medium text-blue-700"
+                    title={name}
+                  >
+                    {name}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </details>
       </div>
 
       <div className="border-t border-slate-200 px-4 py-3 text-[10px] leading-relaxed text-slate-400">

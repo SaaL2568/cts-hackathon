@@ -19,7 +19,8 @@ SYSTEM_PROMPT = (
     "question confidently, reply with exactly the prefix 'REFUSED: ' followed "
     "by a short explanation.\n"
     "4. Never invent dosages, indications, warnings, or any medical claim.\n"
-    "5. Keep the answer concise and directly on topic.\n\n"
+    "5. Keep the answer concise and directly on topic.\n"
+    "6. If the user's query is completely unrelated to medical information (e.g. asking to write code, solve math, general knowledge), you MUST reply with exactly the prefix 'REFUSED: The question is unrelated to medical information.'\n\n"
     "Context blocks:\n{context}"
 )
 

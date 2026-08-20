@@ -84,8 +84,11 @@ class ChatSessionManager:
 
     def listSessionIds(self) -> list[str]:
         with self._lock:
-            sessionIds = set(self._sessions.keys())
+            sessionFiles = []
             if settings.sessionPersistDir.exists():
                 for p in settings.sessionPersistDir.glob("*.json"):
-                    sessionIds.add(p.stem)
-            return sorted(list(sessionIds))
+                    sessionFiles.append((p.stem, p.stat().st_mtime))
+            
+            # Sort by modification time, newest first
+            sessionFiles.sort(key=lambda x: x[1], reverse=True)
+            return [stem for stem, _mtime in sessionFiles]
